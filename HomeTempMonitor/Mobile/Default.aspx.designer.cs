@@ -22,13 +22,13 @@ namespace HomeTempMonitor.Mobile {
         protected global::System.Web.UI.HtmlControls.HtmlForm form1;
         
         /// <summary>
-        /// SqlDataSource1 control.
+        /// lstDiv control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.SqlDataSource SqlDataSource1;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl lstDiv;
         
         /// <summary>
         /// lstDataRange control.
@@ -47,5 +47,14 @@ namespace HomeTempMonitor.Mobile {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Panel chart_div;
+        
+        /// <summary>
+        /// tblTemps control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Table tblTemps;
     }
 }

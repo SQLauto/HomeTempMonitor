@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace HomeTempMonitor
+namespace HomeTempMonitor.Models
 {
     public class TempReading
     {

@@ -1,193 +1,171 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
+using System.Data.Entity;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using HomeTempMonitor.Classes;
+using HomeTempMonitor.Models;
 
 namespace HomeTempMonitor.Mobile
 {
     public partial class Default : System.Web.UI.Page
     {
-        private Temps temps = new Temps();
-        private DateTime minDate;
-        private double minimum;
-        private DateTime maxDate;
-        private double maximum;
-        private double average;
-        private List<TempReading> tempReadings = new List<TempReading>();
-        private double chartWidthFactor = 0.95;
-        private double chartAspect = 1.5;
+        private Temps _currentTemps = new Temps();
+        private IQueryable<templog> _temps;
+        private double _chartWidthFactor = 0.95;
+        private double _chartAspect = 1.5;
 
-        protected async void Page_Load(object sender, EventArgs e)
+        protected void Page_Load(object sender, EventArgs e)
         {
-            temps = await CurrentTemps.GetTempsAsync();
+            RegisterAsyncTask(new PageAsyncTask(LoadTempsAsync));
+            RegisterAsyncTask(new PageAsyncTask(LoadTempDataAsync));
 
-            Int32 chartWidth = Convert.ToInt32(Math.Ceiling(Request.Browser.ScreenPixelsWidth * chartWidthFactor * 0.95));
-            Int32 chartHeight = Convert.ToInt32(Math.Ceiling(chartWidth / chartAspect));
+            Int32 chartWidth = Convert.ToInt32(Math.Ceiling(Request.Browser.ScreenPixelsWidth * _chartWidthFactor * 0.95));
+            Int32 chartHeight = Convert.ToInt32(Math.Ceiling(chartWidth / _chartAspect));
 
             if (Request.Browser.MobileDeviceModel.ToLower() == "iphone")
             {
                 chartWidth = Request.Browser.ScreenPixelsWidth / 2;
                 chartHeight = chartWidth;
+                lstDiv.Attributes["style"] = "width:90%;margin:0 auto;";
+            }
+            else
+            {
+                lstDiv.Attributes["style"] = "width:320px;margin:0 auto;";
             }
 
             chart_div.Width = Unit.Percentage(95);
             chart_div.Height = chartWidth;
+        }
 
-            using (DataView dataView = (DataView)SqlDataSource1.Select(DataSourceSelectArguments.Empty))
+        private async Task LoadTempsAsync()
+        {
+            Temps temps = await CurrentTemps.GetTemps();
+            _currentTemps = temps;
+        }
+
+        private async Task LoadTempDataAsync()
+        {
+            using (var context = new templogEntities())
             {
-                DataRow firstRow = dataView.Table.Rows[0];
+                DateTime range = DateTime.Now.AddHours(-Convert.ToInt32(lstDataRange.SelectedValue));
+                List<templog> temps = await (from t in context.templogs
+                                             where t.Recorded >= range
+                                             orderby t.Recorded ascending
+                                             select t).ToListAsync();
+                _temps = temps.AsQueryable();
 
-                minDate = new DateTime();
-                maxDate = new DateTime();
-                minimum = (double)firstRow["Temperature"];
-                maximum = (double)firstRow["Temperature"];
-                average = 0;
+                List<templog> lastHour = _temps.Where(t => t.Recorded >= DateTime.Now.AddHours(-1)).OrderBy(t => t.Recorded).ToList();
 
-                double total = 0;
-
-                foreach (DataRow row in dataView.Table.Rows)
+                foreach (templog temp in lastHour)
                 {
-                    total += (double)row["Temperature"];
+                    TableCell dateCell = new TableCell();
+                    TableCell atCell = new TableCell();
+                    TableCell tempCell = new TableCell();
 
-                    if ((double)row["Temperature"] <= minimum)
-                    {
-                        minimum = (double)row["Temperature"];
-                        minDate = (DateTime)row["Recorded"];
-                    }
-                    else if ((double)row["Temperature"] >= maximum)
-                    {
-                        maximum = (double)row["Temperature"];
-                        maxDate = (DateTime)row["Recorded"];
-                    }
+                    dateCell.Text = GetFormattedDateString(temp.Recorded);
+                    atCell.Text = "@";
+                    tempCell.Text = temp.Temperature.ToString("f2") + " °F";
 
-                    DateTime rowDate = (DateTime)row["Recorded"];
-                    if (rowDate > DateTime.Now.AddHours(-1))
-                    {
-                        TempReading newReading = new TempReading();
-                        newReading.Recorded = rowDate;
-                        newReading.Temperature = (double)row["Temperature"];
+                    TableRow tableRow = new TableRow();
+                    tableRow.Cells.Add(dateCell);
+                    tableRow.Cells.Add(atCell);
+                    tableRow.Cells.Add(tempCell);
 
-                        tempReadings.Add(newReading);
-                    }
+                    tblTemps.Rows.Add(tableRow);
                 }
-
-                average = total / dataView.Table.Rows.Count;
             }
         }
 
-        protected string GetChartScript()
+        protected string GetTempData()
         {
-            string value = "";
-            StringBuilder strScript = new StringBuilder();
+            StringBuilder tempData = new StringBuilder();
 
-            using (DataView dataView = (DataView)SqlDataSource1.Select(DataSourceSelectArguments.Empty))
+            foreach (templog temp in _temps)
             {
-                try
+                DateTime recorded = temp.Recorded;
+                tempData.Append(",['" + recorded.ToString("M/d/yyyy h:mm tt") + "'," + temp.Temperature.ToString() + "]");
+            }
+
+            return tempData.ToString();
+        }
+
+        protected string GetChartOptions()
+        {
+            Int32 hourRange = Convert.ToInt32(lstDataRange.SelectedValue);
+
+            if (Request.Browser.MobileDeviceModel.ToLower() == "iphone")
+            {
+                if (hourRange <= 48)
                 {
-                    strScript.Append(@"function drawVisualization() {         
-                    var data = google.visualization.arrayToDataTable([  
-                    ['Time', 'Temperature'],");
-
-                    foreach (DataRow row in dataView.Table.Rows)
-                    {
-                        DateTime recorded = (DateTime)row["Recorded"];
-                        strScript.Append("['" + recorded.ToString("M/d/yyyy h:mm tt") + "'," + row["Temperature"].ToString() + "],");
-                    }
-                    strScript.Remove(strScript.Length - 1, 1);
-                    strScript.Append("]);");
-
-                    Int32 hourRange = Convert.ToInt32(lstDataRange.SelectedValue);
-
-                    if (Request.Browser.MobileDeviceModel.ToLower() == "iphone")
-                    {
-                        if (hourRange <= 48)
-                        {
-                            strScript.Append(@"var options = { vAxis: { title: 'Temperature (°F)' }, lineWidth: 1, legend: 'none', chartArea: { left: 85, top: 10, width: '100%', height: '70%' }, backgroundColor: '#f9f9f9' };");
-                        }
-                        else 
-                        {
-                            strScript.Append(@"var options = { vAxis: { title: 'Temperature (°F)' }, lineWidth: 0.5, legend: 'none', chartArea: { left: 85, top: 10, width: '100%', height: '70%' }, backgroundColor: '#f9f9f9' };");
-                        }
-                        
-                    }
-                    else
-                    {
-                        if (hourRange <= 168)
-                        {
-                            strScript.Append(@"var options = { vAxis: { title: 'Temperature (°F)' }, lineWidth: 1, legend: 'none', chartArea: { left: 120, top: 10, width: '100%', height: '80%' }, backgroundColor: '#f9f9f9' };");
-                        }
-                        else
-                        {
-                            strScript.Append(@"var options = { vAxis: { title: 'Temperature (°F)' }, lineWidth: 0.5, legend: 'none', chartArea: { left: 120, top: 10, width: '100%', height: '80%' }, backgroundColor: '#f9f9f9' };");
-                        }
-                    }
-
-                    strScript.Append(" var chart = new google.visualization.LineChart(document.getElementById('chart_div'));  chart.draw(data, options); } google.setOnLoadCallback(drawVisualization);");
-
-                    value = strScript.ToString();
+                    return @"{ vAxis: { title: 'Temperature (°F)' }, lineWidth: 1, legend: 'none', chartArea: { left: 85, top: 10, width: '100%', height: '70%' }, backgroundColor: '#f9f9f9' }";
                 }
-                finally
+                else
                 {
-                    strScript.Clear();
+                    return @"{ vAxis: { title: 'Temperature (°F)' }, lineWidth: 0.5, legend: 'none', chartArea: { left: 85, top: 10, width: '100%', height: '70%' }, backgroundColor: '#f9f9f9' }";
                 }
-                return value;
+
+            }
+            else
+            {
+                if (hourRange <= 168)
+                {
+                    return @"{ vAxis: { title: 'Temperature (°F)' }, lineWidth: 1, legend: 'none', chartArea: { left: 120, top: 10, width: '100%', height: '80%' }, backgroundColor: '#f9f9f9' }";
+                }
+                else
+                {
+                    return @"{ vAxis: { title: 'Temperature (°F)' }, lineWidth: 0.5, legend: 'none', chartArea: { left: 120, top: 10, width: '100%', height: '80%' }, backgroundColor: '#f9f9f9' }";
+                }
             }
         }
 
-        protected string GetInsideTemp()
+        protected string GetCurrentInsideTemp()
         {
-            return temps.inside.ToString("f2") + " °F";
+            return _currentTemps.inside.ToString("f2");
         }
 
-        protected string GetOutsideTemp()
+        protected string GetCurrentOutsideTemp()
         {
-            return temps.outside.ToString("f2") + " °F";
+            return _currentTemps.outside.ToString("f2");
         }
 
         protected string GetMinTemp()
         {
-            return minimum.ToString("f2") + " °F";
+            templog temp = _temps.Aggregate((t1, t2) => t1.Temperature < t2.Temperature ? t1 : t2);
+            return temp.Temperature.ToString("f2");
         }
 
         protected string GetMinDateTime()
         {
-            return minDate.ToShortDateString() + "  " + minDate.ToShortTimeString();
+            templog temp = _temps.Aggregate((t1, t2) => t1.Temperature < t2.Temperature ? t1 : t2);
+            return GetFormattedDateString(temp.Recorded);
         }
 
         protected string GetMaxTemp()
         {
-            return maximum.ToString("f2") + " °F";
+            templog temp = _temps.Aggregate((t1, t2) => t1.Temperature > t2.Temperature ? t1 : t2);
+            return temp.Temperature.ToString("f2");
         }
 
         protected string GetMaxDateTime()
         {
-            return maxDate.ToShortDateString() + "  " + maxDate.ToShortTimeString();
+            templog temp = _temps.Aggregate((t1, t2) => t1.Temperature > t2.Temperature ? t1 : t2);
+            return GetFormattedDateString(temp.Recorded);
         }
 
         protected string GetAvgTemp()
         {
-            return average.ToString("f2") + " °F";
+            return _temps.Average(t => t.Temperature).ToString("f2");
         }
 
-        protected string GetLatestTemps()
+        protected string GetFormattedDateString(DateTime dateTime)
         {
-            StringBuilder strLatestTemps = new StringBuilder();
-
-            foreach (TempReading tempReading in tempReadings)
-            {
-                strLatestTemps.Append("<tr>");
-                strLatestTemps.Append("<td>" + tempReading.Temperature.ToString("f2") + " °F</td>");
-                strLatestTemps.Append("<td>@</td>");
-                strLatestTemps.Append("<td>" + tempReading.Recorded.ToShortDateString() + "  " + tempReading.Recorded.ToShortTimeString() + "</td>");
-                strLatestTemps.Append("</tr>");
-            }
-
-            return strLatestTemps.ToString();
+            return dateTime.ToShortDateString() + "  " + dateTime.ToShortTimeString();
         }
     }
 }

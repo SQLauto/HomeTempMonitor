@@ -1,31 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Threading;
+using System.Net;
 using System.Threading.Tasks;
-using System.Web;
-using System.Web.Script.Serialization;
+using Newtonsoft.Json;
+
+using HomeTempMonitor.Models;
 
 namespace HomeTempMonitor.Classes
 {
     public class CurrentTemps
     {
-        public static async Task<Temps> GetTempsAsync()
+        public static async Task<Temps> GetTemps()
         {
-            Temps temps = new Temps();
+            WebClient client = new WebClient();
+            var clientTemps = client.DownloadStringTaskAsync("http://airpi.bean.local/current/temps");
 
-            using (HttpClient httpClient = new HttpClient())
-            {   
-                string responseBody;
-                Uri address = new Uri("http://airpi.bean.local/current/temps");
-
-                HttpResponseMessage responseMessage = await httpClient.GetAsync(address);
-                responseMessage.EnsureSuccessStatusCode();
-                responseBody = await responseMessage.Content.ReadAsStringAsync();
-                JavaScriptSerializer serializer = new JavaScriptSerializer();
-                temps = serializer.Deserialize<Temps>(responseBody);
-            }
+            Temps temps = JsonConvert.DeserializeObject<Temps>(await clientTemps);
 
             return temps;
         }

@@ -7,7 +7,16 @@
     <title>Bean House Temperature Logger</title>
     <script src="//code.jquery.com/jquery-2.1.3.min.js"></script>
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
-    <asp:Literal ID="chartScripts" runat="server"></asp:Literal>
+    <script type='text/javascript'>  
+        google.load('visualization', '1', {packages: ['corechart']});
+    </script>
+    <script type='text/javascript'>  
+        function drawVisualization() {         
+            var data = google.visualization.arrayToDataTable([  
+            ['Time', 'Temperature (°F)']<%= GetTempData() %>]);
+            var options = { vAxis: { title: 'Temperature (°F)' }, <%= GetLineWidth() %>legend: 'none', chartArea: { left: 150, top: 10, width: '100%', height: '80%' } };
+            var chart = new google.visualization.LineChart(document.getElementById('chart_div'));  chart.draw(data, options); } google.setOnLoadCallback(drawVisualization);
+    </script>
     <script type="text/javascript">
         $(window).resize(function () {
             drawVisualization();
@@ -46,7 +55,7 @@
             <div class="chartarea">
                 <form id="form1" runat="server">
                     <div style="width:100%;text-align:center;">
-                        <p style="font-size:20px;"><strong>Current Temperature: </strong><asp:Label ID="lblCurrentTemp" runat="server"></asp:Label></p>
+                        <p style="font-size:20px;"><strong>Current Temperature: </strong><%= GetCurrentInsideTemp() %> °F</p>
                         Time Range:
                         <asp:DropDownList ID="lstDataRange" runat="server" Height="19px" Width="209px" AutoPostBack="True">
                             <asp:ListItem Selected="True" Value="24">Last 24 Hours</asp:ListItem>
@@ -75,21 +84,21 @@
                             <table class="temp">
                                 <caption class="temp">Minimum Temperature</caption>
                                 <tr>
-                                    <td class="temp"><asp:Label ID="lblMinDate" runat="server"></asp:Label></td>
-                                    <td class="temp"><asp:Label ID="lblMinVal" runat="server"></asp:Label> °F</td>
+                                    <td class="temp"><%= GetMinDate() %></td>
+                                    <td class="temp"><%= GetMinTemp() %> °F</td>
                                 </tr>
                             </table>
                             <table class="temp">
                                 <caption style="font-weight:bold;font-size:24px;">Maximum Temperature</caption>
                                 <tr>
-                                    <td class="temp"><asp:Label ID="lblMaxDate" runat="server"></asp:Label></td>
-                                    <td class="temp"><asp:Label ID="lblMaxVal" runat="server"></asp:Label> °F</td>
+                                    <td class="temp"><%= GetMaxDate() %></td>
+                                    <td class="temp"><%= GetMaxTemp() %> °F</td>
                                 </tr>
                             </table>
                             <table class="temp">
                                 <caption class="temp">Average Temperature</caption>
                                 <tr>
-                                    <td class="temp"><asp:Label ID="lblAvgVal" runat="server"></asp:Label> °F</td>
+                                    <td class="temp"><%= GetAvgTemp() %> °F</td>
                                 </tr>
                             </table>
                         </td>
@@ -106,14 +115,9 @@
         <table>
             <tr>
                 <td style="width:100px">Generated:</td>
-                <td><asp:Label ID="lblGenDate" runat="server"></asp:Label></td>
+                <td><%= GetFormattedDateString(DateTime.Now) %></td>
             </tr>
         </table>
     </div>
-    <asp:SqlDataSource ID="SqlDataSource1" runat="server" ConnectionString="<%$ ConnectionStrings:templogConnectionString %>" SelectCommand="TempsForRange" SelectCommandType="StoredProcedure">
-            <SelectParameters>
-                <asp:ControlParameter ControlID="lstDataRange" DefaultValue="24" Name="hourRange" PropertyName="SelectedValue" DbType="Int32" />
-            </SelectParameters>
-        </asp:SqlDataSource>
-</body>
+    </body>
 </html>
