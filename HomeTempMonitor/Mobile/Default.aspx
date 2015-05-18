@@ -5,7 +5,10 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
     <title>Bean House Temperature Logger</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densitydpi=medium-dpi"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-title" content="Bean House Temperature Logger"/>
+    <meta name="mobile-web-app-capable" content="yes"/>
     <link rel="apple-touch-icon" href="touch-icon-iphone.png" />
     <link rel="apple-touch-icon" sizes="76x76" href="touch-icon-ipad.png" />
     <link rel="apple-touch-icon" sizes="120x120" href="touch-icon-iphone-retina.png" />
@@ -14,22 +17,40 @@
     <link rel="stylesheet" href="//code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
     <script src="//code.jquery.com/jquery-2.1.3.min.js"></script>
     <script src="//code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
-    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
-    <script type='text/javascript'>
-        google.load('visualization', '1', { packages: ['corechart'] });
-    </script>
+    <script type="text/javascript" src="../Scripts/canvasjs.min.js"></script>
     <script type="text/javascript">
-        function drawVisualization() {
-            var data = google.visualization.arrayToDataTable([
-            ['Time', 'Temperature (°F)']<%= GetTempData() %>]);
-            var options = <%= GetChartOptions() %>;
-            var chart = new google.visualization.LineChart(document.getElementById('chart_div')); chart.draw(data, options);
-        } google.setOnLoadCallback(drawVisualization);
-    </script>
-    <script type="text/javascript">
-        $(window).resize(function () {
-            drawVisualization();
-        });
+        window.onload = function () {
+            var chart = new CanvasJS.Chart("chart_div", {
+                data: [
+                    {
+                        type: "line",
+                        markerType: "none",
+                        color: "blue",
+                        lineThickness: <%= GetLineThickness() %>,
+                        dataPoints: [
+                            <%= GetDataSeries() %>
+                        ]
+                    }
+                ],
+                axisY: {
+                    title: "Temperature (°F)",
+                    titleFontSize: 18,
+                    titleFontStyle: "italic",
+                    labelFontSize: 12,
+                    includeZero: false
+                },
+                axisX: {
+                    labelAngle: -45,
+                    labelFontSize: 12,
+                    valueFormatString: "M/D/YYYY h:mm TT"
+                },
+                toolTip: {
+                    content: "Recorded: {x}<br/>Temperature: {y} °F"
+                }
+            });
+
+            chart.render();
+        }
     </script>
 </head>
 <body>
@@ -51,7 +72,7 @@
             </div>
         </div>
         <div style="margin-top:15px;">
-            <asp:Panel ID="chart_div" style="margin:0 auto;" runat="server"></asp:Panel>
+            <asp:Panel ID="chart_div" style="margin:0 auto;width:95%;" runat="server"></asp:Panel>
         </div>
         <table>
             <tr>

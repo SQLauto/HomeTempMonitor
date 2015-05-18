@@ -39,8 +39,7 @@ namespace HomeTempMonitor.Mobile
                 lstDiv.Attributes["style"] = "width:320px;margin:0 auto;";
             }
 
-            chart_div.Width = Unit.Percentage(95);
-            chart_div.Height = chartWidth;
+            chart_div.Height = chartHeight;
         }
 
         private async Task LoadTempsAsync()
@@ -82,20 +81,22 @@ namespace HomeTempMonitor.Mobile
             }
         }
 
-        protected string GetTempData()
+        protected string GetDataSeries()
         {
             StringBuilder tempData = new StringBuilder();
+            string delimiter = "";
 
             foreach (templog temp in _temps)
             {
-                DateTime recorded = temp.Recorded;
-                tempData.Append(",['" + recorded.ToString("M/d/yyyy h:mm tt") + "'," + temp.Temperature.ToString() + "]");
+                tempData.Append(delimiter);
+                tempData.Append("{ x: new Date(" + temp.Recorded.Year + ", " + temp.Recorded.Month + ", " + temp.Recorded.Day + ", " + temp.Recorded.Hour + ", " + temp.Recorded.Minute + "), y: " + temp.Temperature.ToString() + " }");
+                delimiter = ", ";
             }
 
             return tempData.ToString();
         }
 
-        protected string GetChartOptions()
+        protected string GetLineThickness()
         {
             Int32 hourRange = Convert.ToInt32(lstDataRange.SelectedValue);
 
@@ -103,11 +104,11 @@ namespace HomeTempMonitor.Mobile
             {
                 if (hourRange <= 48)
                 {
-                    return @"{ vAxis: { title: 'Temperature (°F)' }, lineWidth: 1, legend: 'none', chartArea: { left: 85, top: 10, width: '100%', height: '70%' }, backgroundColor: '#f9f9f9' }";
+                    return "1";
                 }
                 else
                 {
-                    return @"{ vAxis: { title: 'Temperature (°F)' }, lineWidth: 0.5, legend: 'none', chartArea: { left: 85, top: 10, width: '100%', height: '70%' }, backgroundColor: '#f9f9f9' }";
+                    return "0.5";
                 }
 
             }
@@ -115,11 +116,11 @@ namespace HomeTempMonitor.Mobile
             {
                 if (hourRange <= 168)
                 {
-                    return @"{ vAxis: { title: 'Temperature (°F)' }, lineWidth: 1, legend: 'none', chartArea: { left: 120, top: 10, width: '100%', height: '80%' }, backgroundColor: '#f9f9f9' }";
+                    return "1";
                 }
                 else
                 {
-                    return @"{ vAxis: { title: 'Temperature (°F)' }, lineWidth: 0.5, legend: 'none', chartArea: { left: 120, top: 10, width: '100%', height: '80%' }, backgroundColor: '#f9f9f9' }";
+                    return "0.5";
                 }
             }
         }

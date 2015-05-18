@@ -5,22 +5,41 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
     <title>Bean House Temperature Logger</title>
-    <script src="//code.jquery.com/jquery-2.1.3.min.js"></script>
-    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
-    <script type='text/javascript'>  
-        google.load('visualization', '1', {packages: ['corechart']});
-    </script>
-    <script type='text/javascript'>  
-        function drawVisualization() {         
-            var data = google.visualization.arrayToDataTable([  
-            ['Time', 'Temperature (°F)']<%= GetTempData() %>]);
-            var options = { vAxis: { title: 'Temperature (°F)' }, <%= GetLineWidth() %>legend: 'none', chartArea: { left: 150, top: 10, width: '100%', height: '80%' } };
-            var chart = new google.visualization.LineChart(document.getElementById('chart_div'));  chart.draw(data, options); } google.setOnLoadCallback(drawVisualization);
-    </script>
+    <script type="text/javascript" src="//code.jquery.com/jquery-2.1.3.min.js"></script>
+    <script type="text/javascript" src="Scripts/canvasjs.min.js"></script>
     <script type="text/javascript">
-        $(window).resize(function () {
-            drawVisualization();
-        });
+        window.onload = function () {
+            var chart = new CanvasJS.Chart("chart_div", {
+                data: [
+                    {
+                        type: "line",
+                        markerType: "none",
+                        color: "blue",
+                        lineThickness: 1,
+                        dataPoints: [
+                            <%= GetDataSeries() %>
+                        ]
+                    }
+                ],
+                axisY: {
+                    title: "Temperature (°F)",
+                    titleFontSize: 18,
+                    titleFontStyle: "italic",
+                    labelFontSize: 12,
+                    includeZero: false
+                },
+                axisX: {
+                    labelAngle: -45,
+                    labelFontSize: 12,
+                    valueFormatString: "M/D/YYYY h:mm TT"
+                },
+                toolTip: {
+                    content: "Recorded: {x}<br/>Temperature: {y} °F"
+                }
+            });
+
+            chart.render();
+        }
     </script>
     <style>
         body {
@@ -76,7 +95,6 @@
                     </div>
                 </div>
             </div>
-        
             <div style="margin-top:12px;">
                 <table style="margin:0 auto;width:50%;">
                     <tr>

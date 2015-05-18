@@ -62,25 +62,27 @@ namespace HomeTempMonitor
             }
         }
 
-        protected string GetTempData()
+        protected string GetDataSeries()
         {
             StringBuilder tempData = new StringBuilder();
+            string delimiter = "";
 
             foreach (templog temp in _temps)
             {
-                DateTime recorded = temp.Recorded;
-                tempData.Append(",['" + recorded.ToString("M/d/yyyy h:mm tt") + "'," + temp.Temperature.ToString() + "]");
+                tempData.Append(delimiter);
+                tempData.Append("{ x: new Date(" + temp.Recorded.Year + ", " + temp.Recorded.Month + ", " + temp.Recorded.Day + ", " + temp.Recorded.Hour + ", " + temp.Recorded.Minute + "), y: " + temp.Temperature.ToString() + " }");
+                delimiter = ", ";
             }
 
             return tempData.ToString();
         }
 
-        protected string GetLineWidth()
+        protected string GetLineThickness()
         {
             if (Convert.ToInt32(lstDataRange.SelectedValue) > 48)
-                return "lineWidth: 1, ";
+                return "1";
             else
-                return "";
+                return "3";
         }
 
         protected string GetCurrentInsideTemp()
