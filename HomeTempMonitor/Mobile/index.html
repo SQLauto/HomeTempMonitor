@@ -1,0 +1,214 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Bean House Temperature Log</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densitydpi=medium-dpi" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Bean House Temperature Logger" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <link rel="apple-touch-icon" href="touch-icon-iphone.png" />
+    <link rel="apple-touch-icon" sizes="76x76" href="touch-icon-ipad.png" />
+    <link rel="apple-touch-icon" sizes="120x120" href="touch-icon-iphone-retina.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="touch-icon-ipad-retina.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="touch-icon-iphone-retina-3x.png" />
+    <link rel="stylesheet" href="../Content/jquery.mobile-1.4.5.min.css" />
+    <script type="text/javascript" src="../Scripts/date.format.js"></script>
+    <script type="text/javascript" src="../Scripts/jquery-2.1.3.min.js"></script>
+    <script type="text/javascript" src="../Scripts/jquery.mobile-1.4.5.min.js"></script>
+    <script type="text/javascript" src="../Scripts/canvasjs.min.js"></script>
+    <script type="text/javascript">
+        //var renderStart = Date.now();
+        var dtFormat = "m/d/yyyy h:MM TT";
+        var dataSet;
+        var lineThickness;
+
+        function getLineThickness() {
+            var selectedValue = parseInt($("#lstDataRange").val());
+            if (navigator.userAgent.match(/iPhone/i)) {
+                if (selectedValue <= 48)
+                    lineThickness = 1;
+                else
+                    lineThickness = 0.5;
+            }
+            else if (navigator.userAgent.match(/iPad/i)) {
+                if (selectedValue <= 168)
+                    lineThickness = 1;
+                else
+                    lineThickness = 0.5;
+            }
+            else
+                lineThickness = 1;
+        }
+
+        function loadCurrentTemps() {
+            $.getJSON("../CurrentTemps", function (data) {
+                $("#insideTemp").text("");
+                $.each(data, function (key, val) {
+                    if (key == "Inside") {
+                        $("#insideTemp").text(val.toFixed(2));
+                    }
+                });
+            });
+        }
+        setInterval("loadCurrentTemps()", 60000);
+
+        function loadTempData() {
+            $.getJSON("../Temps/" + $("#lstDataRange").val(), function (data) {
+                $.each(data, function (key, val) {
+                    if (key == "AverageTemp") {
+                        $("#averageTemp").text(val.toFixed(2) + " °F");
+                    }
+                    else if (key == "MaximumTemp") {
+                        $("#maxTemp").text(val["Temperature"].toFixed(2) + " °F");
+                        $("#maxTempDate").text(dateFormat(new Date(val["Recorded"]), dtFormat));
+                    }
+                    else if (key == "MinimumTemp") {
+                        $("#minTemp").text(val["Temperature"].toFixed(2) + " °F");
+                        $("#minTempDate").text(dateFormat(new Date(val["Recorded"]), dtFormat));
+                    }
+                    else if (key == "LastHour") {
+                        var tblTempBody = $("#tblLastTemps tbody");
+                        tblTempBody.html("");
+                        $.each(val, function (k, v) {
+                            var newRow = $("<tr>");
+                            $("<td>").text(v["Temperature"].toFixed(2) + " °F").appendTo(newRow);
+                            $("<td>").text("@").appendTo(newRow).appendTo(newRow);
+                            $("<td>").text(dateFormat(new Date(v["Recorded"]), dtFormat)).appendTo(newRow);
+                            tblTempBody.append(newRow);
+                        });
+                    }
+                    else if (key == "DataSet") {
+                        dataSet = [];
+                        $.each(val, function (k, v) {
+                            var newDataPoint = {};
+                            newDataPoint["x"] = new Date(v["Recorded"]);
+                            newDataPoint["y"] = v["Temperature"];
+                            dataSet.push(newDataPoint);
+                        });
+                        renderChart();
+                    }
+                });
+            });
+            $("#updatedTime").text(dateFormat(Date.now(), "m/d/yyyy h:MM:ss TT"));
+        }
+        setInterval("loadTempData()", 900000);
+
+        function renderChart() {
+            $("#chart_div").html("");
+            var chart = new CanvasJS.Chart("chart_div", {
+                data: [
+                    {
+                        type: "line",
+                        markerType: "none",
+                        color: "blue",
+                        lineThickness: lineThickness,
+                        dataPoints: dataSet
+                    }
+                ],
+                axisY: {
+                    title: "Temperature (°F)",
+                    titleFontSize: 18,
+                    titleFontStyle: "italic",
+                    labelFontSize: 12,
+                    includeZero: false
+                },
+                axisX: {
+                    labelAngle: -45,
+                    labelFontSize: 12,
+                    valueFormatString: "M/D/YYYY h:mm TT"
+                },
+                toolTip: {
+                    content: "Recorded: {x}<br/>Temperature: {y} °F"
+                }
+            });
+
+            chart.render();
+        }
+
+        window.onload = function () {
+            var chartDiv = $("#chart_div");
+            if (navigator.userAgent.match(/iPhone/i)) {
+                chartDiv.css("height", chartDiv.width());
+                $("#lstDiv").css("width", "90%");
+            }
+            else if (navigator.userAgent.match(/iPad/i)) {
+                chartDiv.css("height", (chartDiv.width() / 1.5));
+            }
+            else {
+                chartDiv.css("height", "600px");
+            }
+
+            loadCurrentTemps();
+            getLineThickness();
+            loadTempData();
+
+            //$("#renderTime").text(Date.now()-renderStart);
+        }
+    </script>
+    <style>
+        html {
+            padding: 0px;
+            margin: 0px;
+        }
+
+        body {
+            padding: 10px;
+            margin: 0px;
+        }
+    </style>
+</head>
+<body>
+    <form id="form1">
+        <div style='margin:10px 10px 0px 10px; position:relative'>
+            <div style="text-align:center;">
+                <span style="font-weight:bold;font-size:20px;">Bean House Temperature Log</span>
+                <p style="font-size:16px;"><span style="font-weight:bold;">Current Temp: </span><span id="insideTemp"></span> °F</p>
+                <div id="lstDiv" style="margin:0 auto;width:320px;">
+                    <select name="lstDataRange "id="lstDataRange" style="height:19px;width:209px;" onchange="getLineThickness();loadTempData();" data-icon="false">
+                        <option selected="selected" value="24">Last 24 Hours</option>
+                        <option value="48">Last 48 Hours</option>
+                        <option value="168">Last Week</option>
+                        <option value="720">Last Month</option>
+                        <option value="2160">Last 3 Months</option>
+                        <option value="4320">Last 6 Months</option>
+                        <option value="8760">Last Year</option>
+                    </select>
+                </div>
+            </div>
+            <div style="margin-top:15px;">
+                <div id="chart_div" style="margin:0 auto;width:95%;"></div>
+            </div>
+            <table>
+                <tr>
+                    <td style="width:100px"><span style="font-weight:bold">Min Temp:</span></td>
+                    <td id="minTemp"></td>
+                    <td>@</td>
+                    <td id="minTempDate"></td>
+                </tr>
+                <tr>
+                    <td style="width:100px"><span style="font-weight:bold">Max Temp:</span></td>
+                    <td id="maxTemp"></td>
+                    <td>@</td>
+                    <td id="maxTempDate"></td>
+                </tr>
+                <tr>
+                    <td style="width:100px"><span style="font-weight:bold">Avg Temp:</span></td>
+                    <td id="averageTemp"></td>
+                </tr>
+            </table>
+            <br />
+            <span style="font-weight:bold">Last Hour</span>
+            <table id="tblLastTemps">
+                <tbody></tbody>
+            </table>
+            <br />
+            <table>
+                <tr>
+                    <td style="width:100px">Updated:</td>
+                    <td id="updatedTime"></td>
+                </tr>
+            </table>
+        </div>
+    </form>
+</body>
+</html>

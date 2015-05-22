@@ -1,13 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+using System.Runtime.Serialization;
 
 namespace HomeTempMonitor.Models
 {
+    [DataContract]
     public class Temps
     {
-        public double inside;
-        public double outside;
+        [DataMember]
+        public double Inside { get; set; }
+        [DataMember]
+        public double Outside { get; set; }
     }
 }

@@ -9,12 +9,46 @@ namespace HomeTempMonitor.Classes
 {
     public class CurrentTemps
     {
-        public static async Task<Temps> GetTemps()
+        public static async Task<Temps> GetTempsAsync()
         {
-            WebClient client = new WebClient();
-            var clientTemps = client.DownloadStringTaskAsync("http://airpi.bean.local/current/temps");
+            Temps temps;
+            try
+            {
+                WebClient client = new WebClient();
+                var clientTemps = client.DownloadStringTaskAsync("http://airpi.bean.local/current/temps");
 
-            Temps temps = JsonConvert.DeserializeObject<Temps>(await clientTemps);
+                temps = JsonConvert.DeserializeObject<Temps>(await clientTemps);
+            }
+            catch (Exception e)
+            {
+                temps = new Temps()
+                {
+                    Inside = -1,
+                    Outside = -1
+                };
+            }
+
+            return temps;
+        }
+
+        public static Temps GetTemps()
+        {
+            Temps temps;
+            try
+            {
+                WebClient client = new WebClient();
+                var clientTemps = client.DownloadString("http://airpi.bean.local/current/temps");
+
+                temps = JsonConvert.DeserializeObject<Temps>(clientTemps);
+            }
+            catch (Exception e)
+            {
+                temps = new Temps()
+                {
+                    Inside = -1,
+                    Outside = -1
+                };
+            }
 
             return temps;
         }

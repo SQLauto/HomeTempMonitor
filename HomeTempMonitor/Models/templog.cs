@@ -6,16 +6,21 @@
 //     Manual changes to this file will be overwritten if the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
+using System.Runtime.Serialization;
 
 namespace HomeTempMonitor.Models
 {
     using System;
     using System.Collections.Generic;
     
+    [DataContract]
     public partial class templog
     {
+        [IgnoreDataMember]
         public int TempId { get; set; }
+        [DataMember]
         public double Temperature { get; set; }
+        [DataMember]
         public System.DateTime Recorded { get; set; }
     }
 }
