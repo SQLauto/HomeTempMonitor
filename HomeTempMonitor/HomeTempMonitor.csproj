@@ -337,7 +337,6 @@
       <DependentUpon>TempLog.edmx</DependentUpon>
       <LastGenOutput>TempLog1.cs</LastGenOutput>
     </Content>
-    <Content Include="ClassDiagram1.cd" />
     <None Include="Properties\PublishProfiles\BeanWeb.pubxml" />
     <None Include="Properties\PublishProfiles\newWebTemp.pubxml" />
     <None Include="Scripts\jquery-2.1.3.intellisense.js" />
@@ -367,7 +366,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Classes\CurrentTemps.cs" />
-    <Compile Include="Classes\DateTimeToString.cs" />
     <Compile Include="CurrentTempsController.cs" />
     <Compile Include="Models\TempData.cs" />
     <Compile Include="Models\TempLog.Context.cs">
