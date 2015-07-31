@@ -28,6 +28,7 @@
     <SccProvider>
     </SccProvider>
     <WcfConfigValidationEnabled>True</WcfConfigValidationEnabled>
+    <UseGlobalApplicationHostFile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -310,8 +311,13 @@
     <Content Include="Content\jquery.mobile.structure-1.4.5.min.css" />
     <Content Include="Content\jquery.mobile.theme-1.4.5.css" />
     <Content Include="Content\jquery.mobile.theme-1.4.5.min.css" />
+    <Content Include="Css\common.css" />
+    <Content Include="Css\desktop.css" />
+    <Content Include="Css\ipad-landscape.css" />
+    <Content Include="Css\ipad-portrait.css" />
+    <Content Include="Css\iphone-landscape.css" />
+    <Content Include="Css\iphone-portrait.css" />
     <Content Include="index.html" />
-    <Content Include="Mobile\index.html" />
     <Content Include="Mobile\touch-icon-ipad-retina.png" />
     <Content Include="Mobile\touch-icon-ipad.png" />
     <Content Include="Mobile\touch-icon-iphone-retina-3x.png" />
@@ -341,6 +347,7 @@
     <None Include="Properties\PublishProfiles\newWebTemp.pubxml" />
     <None Include="Scripts\jquery-2.1.3.intellisense.js" />
     <Content Include="Scripts\date.format.js" />
+    <Content Include="Scripts\homeTemp.js" />
     <Content Include="Scripts\jquery-2.1.3.js" />
     <Content Include="Scripts\jquery-2.1.3.min.js" />
     <Content Include="Scripts\jquery-2.1.3.min.map" />
@@ -367,6 +374,7 @@
   <ItemGroup>
     <Compile Include="Classes\CurrentTemps.cs" />
     <Compile Include="CurrentTempsController.cs" />
+    <Compile Include="Models\Temp.cs" />
     <Compile Include="Models\TempData.cs" />
     <Compile Include="Models\TempLog.Context.cs">
       <AutoGen>True</AutoGen>

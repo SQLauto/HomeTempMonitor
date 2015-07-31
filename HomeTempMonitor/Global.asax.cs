@@ -22,6 +22,8 @@ namespace HomeTempMonitor
                     defaults: new { id = RouteParameter.Optional }
                 );
             });
+
+            GlobalConfiguration.Configuration.Formatters.XmlFormatter.SupportedMediaTypes.Clear();
         }
     }
 }

@@ -19,7 +19,7 @@ namespace HomeTempMonitor.Classes
 
                 temps = JsonConvert.DeserializeObject<Temps>(await clientTemps);
             }
-            catch (Exception e)
+            catch
             {
                 temps = new Temps()
                 {
@@ -41,7 +41,7 @@ namespace HomeTempMonitor.Classes
 
                 temps = JsonConvert.DeserializeObject<Temps>(clientTemps);
             }
-            catch (Exception e)
+            catch
             {
                 temps = new Temps()
                 {

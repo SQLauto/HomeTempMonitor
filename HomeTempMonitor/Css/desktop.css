@@ -1,0 +1,56 @@
+﻿#mainContainer {
+    padding: 10px 10px 0px 10px;
+}
+
+table {
+    width: 100%;
+    margin-bottom: 12px;
+}
+
+caption {
+    font-size: 24px;
+}
+
+#pageTitle {
+    font-size: 32px;
+}
+
+.currentTemps {
+    font-size: 20px;
+}
+
+#lstDataRange {
+    height: 19px;
+    width: 209px;
+}
+
+#chartArea {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+#chartTitle {
+    font-size:24px;
+    font-weight:bold;
+    padding-left:2.5%
+}
+
+#chart_div {
+    margin-top: 10px;
+    height: 600px;
+}
+
+#statsArea {
+    width:50%;
+    overflow:hidden;
+}
+
+#minMaxAvg {
+    width:50%;
+    float:left;
+}
+
+#lastHour {
+    width:50%;
+    overflow:hidden;
+}
