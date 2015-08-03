@@ -103,14 +103,28 @@ function renderChart() {
     chart.render();
 }
 
+function setStatsClasses() {
+    var minMaxAvg = $("#minMaxAvg");
+    var lastHour = $("#lastHour");
+
+    minMaxAvg.removeClass();
+    lastHour.removeClass();
+
+    if (window.innerWidth < 768 && (window.orientation == 90 || window.orientation == -90)) {
+        minMaxAvg.addClass("col-lg-6 col-md-6 col-sm-6 col-xs-6");
+        lastHour.addClass("col-lg-6 col-md-6 col-sm-6 col-xs-6");
+    } else {
+        minMaxAvg.addClass("col-lg-6 col-md-6 col-sm-6 col-xs-12");
+        lastHour.addClass("col-lg-6 col-md-6 col-sm-6 col-xs-12");
+    }
+}
+
 window.onload = function () {
-    //var startDate = new Date(2015, 5, 1, 0, 0, 0);
-    //var endDate = new Date(2015, 5, 30, 23, 59, 59);
+    $(window).on("orientationchange", function (event) {
+        setStatsClasses();
+    });
 
-    //$.getJSON("/Temps/DateRange", { startDateString: startDate.toISOString(), endDateString: endDate.toISOString() }, function (data) {
-    //    alert(JSON.stringify(data));
-    //});
-
+    setStatsClasses();
     loadCurrentTemps();
     getLineThickness();
     loadTempData();

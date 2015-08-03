@@ -11,14 +11,11 @@
     <link rel="apple-touch-icon" sizes="120x120" href="Mobile/touch-icon-iphone-retina.png" />
     <link rel="apple-touch-icon" sizes="152x152" href="Mobile/touch-icon-ipad-retina.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="Mobile/touch-icon-iphone-retina-3x.png" />
-    <link rel="stylesheet" href="Css/common.css" />
-    <link rel="stylesheet" media="all and (min-device-width: 320px) and (max-device-width: 736px) and (orientation: portrait)" href="Css/iphone-portrait.css" />
-    <link rel="stylesheet" media="all and (min-device-width: 320px) and (max-device-width: 736px) and (orientation: landscape)" href="Css/iphone-landscape.css" />
-    <link rel="stylesheet" media="all and (min-device-width: 768px) and (max-device-width: 1024px) and (orientation: portrait)" href="Css/ipad-portrait.css" />
-    <link rel="stylesheet" media="all and (min-device-width: 768px) and (max-device-width: 1024px) and (orientation: landscape)" href="Css/ipad-landscape.css" />
-    <link rel="stylesheet" media="all and (min-device-width: 1025px)" href="Css/desktop.css" />
+    <link rel="stylesheet" href="Content/homeTemp.css" />
+    <link rel="stylesheet" href="Content/bootstrap.min.css" />
     <script type="text/javascript" src="Scripts/date.format.js"></script>
     <script type="text/javascript" src="Scripts/jquery-2.1.3.min.js"></script>
+    <script type="text/javascript" src="Scripts/bootstrap.min.js"></script>
     <script type="text/javascript" src="Scripts/canvasjs.min.js"></script>
     <script type="text/javascript" src="Scripts/homeTemp.js"></script>
     <script type="text/javascript">
@@ -40,12 +37,15 @@
     </script>
 </head>
 <body>
-    <div id="mainContainer">
-        <div style="text-align:center;">
-            <span id="pageTitle">Bean House Temperature Log</span>
-            <p class="currentTemps"><strong>Current Temp<span class="fullWords">erature</span>: </strong><span id="insideTemp"></span> °F</p>
+    <div id="mainContainer" class="container">
+        <div style="text-align:center;" class="row">
+            <p id="pageTitle" class="col-sm-12 col-md-12">Bean House Temperature Log</p>
+            <p class="currentTemps col-sm-12 col-md-12">
+                <span class="hidden-xs"><strong>Current Temperature:</strong></span>
+                <span class="hidden-sm hidden-md hidden-lg"><strong>Current Temp:</strong></span>
+                <span id="insideTemp"></span> °F
+            </p>
             <div id="lstDiv">
-                <span id="lblTimeRange">Time Range:</span>
                 <select id="lstDataRange" onchange="getLineThickness(); loadTempData();" data-icon="false">
                     <option selected="selected" value="24">Last 24 Hours</option>
                     <option value="48">Last 48 Hours</option>
@@ -57,14 +57,19 @@
                 </select>
             </div>
         </div>
-        <div id="chartArea">
-            <span id="chartTitle">Temperature Chart</span>
-            <div id="chart_div"></div>
+        <div class="row">
+            <div id="chartArea" class="col-md-12 col-sm-12 col-xs-12">
+                <span id="chartTitle">Temperature Chart</span>
+                <div id="chart_div"></div>
+            </div>
         </div>
         <div id="statsArea">
-            <div id="minMaxAvg" class="tblContainer">
-                <table class="statsTable minMaxAvgTable">
-                    <caption>Min<span class="fullWords">imum</span> Temp<spanclass class="fullWords">erature</spanclass></caption>
+            <div id="minMaxAvg">
+                <table class="stats col-md-12 col-sm-12 col-xs-12">
+                    <caption>
+                        <span class="hidden-xs">Minimum Temperature</span>
+                        <span class="hidden-lg hidden-md hidden-sm">Min Temp</span>
+                    </caption>
                     <tbody>
                         <tr>
                             <td id="minTempDate"></td>
@@ -72,8 +77,11 @@
                         </tr>
                     </tbody>
                 </table>
-                <table class="statsTable minMaxAvgTable maxAvgTable">
-                    <caption>Max<spanclass class="fullWords">imum</spanclass> Temp<span class="fullWords">erature</span></caption>
+                <table class="stats col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <caption>
+                        <span class="hidden-xs">Maximum Temperature</span>
+                        <span class="hidden-lg hidden-md hidden-sm">Max Temp</span>
+                    </caption>
                     <tbody>
                         <tr>
                             <td id="maxTempDate"></td>
@@ -81,8 +89,11 @@
                         </tr>
                     </tbody>
                 </table>
-                <table class="statsTable minMaxAvgTable maxAvgTable">
-                    <caption>Av<span class="fullWords">era</span>g<span class="fullWords">e</span> Temp<span class="fullWords">erature</span></caption>
+                <table class="stats col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <caption>
+                        <span class="hidden-xs">Average Temperature</span>
+                        <span class="hidden-lg hidden-md hidden-sm">Avg Temp</span>
+                    </caption>
                     <tbody>
                         <tr>
                             <td id="averageTemp"></td>
@@ -90,9 +101,12 @@
                     </tbody>
                 </table>
             </div>
-            <div id="lastHour" class="tblContainer">
-                <table id="tblLastTemps" class="statsTable">
-                    <caption><span class="fullWords">Readings For </span>Last Hour</caption>
+            <div id="lastHour">
+                <table id="tblLastTemps" class="stats col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <caption>
+                        <span class="hidden-xs">Readings For Last Hour</span>
+                        <span class="hidden-lg hidden-md hidden-sm">Last Hour</span>
+                    </caption>
                     <thead>
                         <tr><th>Date/Time</th><th>Temperature</th></tr>
                     </thead>
@@ -100,12 +114,13 @@
                 </table>
             </div>
         </div>
-        <table id="tblUpdated">
-            <tr>
-                <td id="lblUpdated">Updated:</td>
-                <td id="updatedTime"></td>
-            </tr>
-        </table>
+        
     </div>
+    <table id="tblUpdated" class="row">
+        <tr>
+            <td id="lblUpdated">Updated:</td>
+            <td id="updatedTime"></td>
+        </tr>
+    </table>
 </body>
 </html>
