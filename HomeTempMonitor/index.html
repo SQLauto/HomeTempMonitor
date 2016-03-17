@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <title>Bean House Temperature Log</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densitydpi=medium-dpi" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Bean House Temperature Log" />
     <meta name="mobile-web-app-capable" content="yes" />
@@ -46,7 +46,7 @@
                 <span id="insideTemp"></span> °F
             </p>
             <div id="lstDiv">
-                <select id="lstDataRange" onchange="getLineThickness(); loadTempData();" data-icon="false">
+                <select id="lstDataRange" onchange="getLineThickness(); loadChartTempData();" data-icon="false">
                     <option selected="selected" value="24">Last 24 Hours</option>
                     <option value="48">Last 48 Hours</option>
                     <option value="168">Last Week</option>
@@ -65,40 +65,26 @@
         </div>
         <div id="statsArea">
             <div id="minMaxAvg">
-                <table class="stats col-md-12 col-sm-12 col-xs-12">
+                <table id="minTempTable" class="stats col-md-12 col-sm-12 col-xs-12">
                     <caption>
                         <span class="hidden-xs">Minimum Temperature</span>
                         <span class="hidden-lg hidden-md hidden-sm">Min Temp</span>
                     </caption>
-                    <tbody>
-                        <tr>
-                            <td id="minTempDate"></td>
-                            <td id="minTemp"></td>
-                        </tr>
-                    </tbody>
+                    <tbody></tbody>
                 </table>
-                <table class="stats col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <table id="maxTempTable" class="stats col-lg-12 col-md-12 col-sm-12 col-xs-12">
                     <caption>
                         <span class="hidden-xs">Maximum Temperature</span>
                         <span class="hidden-lg hidden-md hidden-sm">Max Temp</span>
                     </caption>
-                    <tbody>
-                        <tr>
-                            <td id="maxTempDate"></td>
-                            <td id="maxTemp"></td>
-                        </tr>
-                    </tbody>
+                    <tbody></tbody>
                 </table>
-                <table class="stats col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <table id="avgTempTable" class="stats col-lg-12 col-md-12 col-sm-12 col-xs-12">
                     <caption>
                         <span class="hidden-xs">Average Temperature</span>
                         <span class="hidden-lg hidden-md hidden-sm">Avg Temp</span>
                     </caption>
-                    <tbody>
-                        <tr>
-                            <td id="averageTemp"></td>
-                        </tr>
-                    </tbody>
+                    <tbody></tbody>
                 </table>
             </div>
             <div id="lastHour">

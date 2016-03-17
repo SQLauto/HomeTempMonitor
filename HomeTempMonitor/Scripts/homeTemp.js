@@ -1,5 +1,8 @@
 ﻿var dtFormat = "m/d/yyyy h:MM TT";
 var dataSet;
+var minTemp;
+var maxTemp;
+var avgTemp;
 var lineThickness;
 
 function getLineThickness() {
@@ -31,45 +34,82 @@ function loadCurrentTemps() {
 }
 setInterval("loadCurrentTemps()", 60000);
 
-function loadTempData() {
-    $.getJSON("/Temps/FullData/" + $("#lstDataRange").val(), function (data) {
-        $.each(data, function (key, val) {
-            if (key == "AverageTemp") {
-                $("#averageTemp").text(val.toFixed(2) + " °F");
+function loadChartTempData() {
+    var endDate = new Date();
+    var startDate = new Date(endDate);
+    var hours = parseInt($("#lstDataRange").val());
+    startDate.setTime(startDate.getTime() - hours * 3600000);
+    var dateRangeUrl = "/Temps/DateRange?startDateString=" + startDate.toGMTString() + "&endDateString=" + endDate.toGMTString();
+
+    $.getJSON(dateRangeUrl, function (data) {
+        dataSet = [];
+        var totalTemp = 0;
+
+        for (var x = 0; x < data.length; x++) {
+            var newDataPoint = {};
+            newDataPoint["x"] = new Date(data[x]["Recorded"]);
+            newDataPoint["y"] = data[x]["Temperature"];
+            dataSet.push(newDataPoint);
+
+            totalTemp += data[x]["Temperature"];
+
+            if (data[x] == data[0]) {
+                minTemp = data[x];
+                maxTemp = data[x];
+            } else {
+                if (data[x]["Temperature"] <= minTemp["Temperature"]) {
+                    minTemp = data[x];
+                } else if (data[x]["Temperature"] >= maxTemp["Temperature"]) {
+                    maxTemp = data[x];
+                }
             }
-            else if (key == "MaximumTemp") {
-                $("#maxTemp").text(val["Temperature"].toFixed(2) + " °F");
-                $("#maxTempDate").text(dateFormat(new Date(val["Recorded"]), dtFormat));
-            }
-            else if (key == "MinimumTemp") {
-                $("#minTemp").text(val["Temperature"].toFixed(2) + " °F");
-                $("#minTempDate").text(dateFormat(new Date(val["Recorded"]), dtFormat));
-            }
-            else if (key == "LastHour") {
-                var tblTempBody = $("#tblLastTemps tbody");
-                tblTempBody.html("");
-                $.each(val, function (k, v) {
-                    var newRow = $("<tr>");
-                    $("<td>").text(dateFormat(new Date(v["Recorded"]), dtFormat)).appendTo(newRow);
-                    $("<td>").text(v["Temperature"].toFixed(2) + " °F").appendTo(newRow);
-                    tblTempBody.append(newRow);
-                });
-            }
-            else if (key == "DataSet") {
-                dataSet = [];
-                $.each(val, function (k, v) {
-                    var newDataPoint = {};
-                    newDataPoint["x"] = new Date(v["Recorded"]);
-                    newDataPoint["y"] = v["Temperature"];
-                    dataSet.push(newDataPoint);
-                });
-                renderChart();
-            }
-        });
+        }
+        avgTemp = totalTemp / dataSet.length;
+
+        var tblMinTempBody = $("#minTempTable tbody");
+        tblMinTempBody.html("");
+        var newMinTempRow = $("<tr>");
+        $("<td>").text(dateFormat(new Date(minTemp["Recorded"]), dtFormat)).appendTo(newMinTempRow);
+        $("<td>").text(minTemp["Temperature"].toFixed(2) + " °F").appendTo(newMinTempRow);
+        tblMinTempBody.append(newMinTempRow);
+
+        var tblMaxTempBody = $("#maxTempTable tbody");
+        tblMaxTempBody.html("");
+        var newMaxTempRow = $("<tr>");
+        $("<td>").text(dateFormat(new Date(maxTemp["Recorded"]), dtFormat)).appendTo(newMaxTempRow);
+        $("<td>").text(maxTemp["Temperature"].toFixed(2) + " °F").appendTo(newMaxTempRow);
+        tblMaxTempBody.append(newMaxTempRow);
+
+        var tblAvgTempBody = $("#avgTempTable tbody");
+        tblAvgTempBody.html("");
+        var newAvgTempRow = $("<tr>");
+        $("<td>").text(avgTemp.toFixed(2) + " °F").appendTo(newAvgTempRow);
+        tblAvgTempBody.append(newAvgTempRow);
+
+        renderChart();
     });
+}
+
+function loadLastHour() {
+    $.getJSON("/Temps/LastHour", function (data) {
+        var tblTempBody = $("#tblLastTemps tbody");
+        tblTempBody.html("");
+        for (var x = 0; x < data.length; x++) {
+            var newRow = $("<tr>");
+            $("<td>").text(dateFormat(new Date(data[x]["Recorded"]), dtFormat)).appendTo(newRow);
+            $("<td>").text(data[x]["Temperature"].toFixed(2) + " °F").appendTo(newRow);
+            tblTempBody.append(newRow);
+        }
+    });
+}
+
+setInterval("loadTempData()", 900000);
+
+function loadTempData() {
+    loadChartTempData();
+    loadLastHour();
     $("#updatedTime").text(dateFormat(Date.now(), "m/d/yyyy h:MM:ss TT"));
 }
-setInterval("loadTempData()", 900000);
 
 function renderChart() {
     $("#chart_div").html("");

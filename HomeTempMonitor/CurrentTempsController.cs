@@ -12,7 +12,6 @@ namespace HomeTempMonitor
 {
     public class CurrentTempsController : ApiController
     {
-        // GET api/<controller>
         public Temps Get()
         {
             return CurrentTemps.GetTemps();
